@@ -8,6 +8,9 @@ from utils import find_meta_tag_value, check_dns_txt_record_exists, catch_except
 
 @catch_exception
 def get_meta_tag_value(event, context):
+    '''
+        An endpoint to get meta tag value by name from a website
+    '''
     schema = MetaTagRequestSchema()
     ip_data = event.get('queryStringParameters', {})
     try:
@@ -32,6 +35,9 @@ def get_meta_tag_value(event, context):
 
 @catch_exception
 def check_dns_txt(event, context):
+    '''
+        An endpoint to check the TXT record in DNS
+    '''
     schema = DNSTxtCheckSchema()
     ip_data = json.loads(event.get('body', '{}'))
     try:

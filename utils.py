@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 import uuid
 import json
 import logging
@@ -15,6 +16,9 @@ log = logging.getLogger(__name__)
 
 
 def catch_exception(func):
+    '''
+        A wrapper function to catch any Internal server errors and return 500
+    '''
     @wraps(func)
     def log_and_return_exception(*args, **kwargs):
         try:
@@ -29,7 +33,14 @@ def catch_exception(func):
 
     return log_and_return_exception
 
-def find_meta_tag_value(url: str, name: str):
+def find_meta_tag_value(url: str, name: str) -> Tuple[bool, str]:
+    '''
+        find_meta_tag_value: finds the meta tag value using python requests and bs4 packages
+        :param url(str): URL of a website
+        :param name(str): name of the meta tag to find
+
+        return (tuple): [tag exists, tag content] 
+    '''
     res = requests.get(url)
     soup = BeautifulSoup(res.content, 'html.parser')
     meta_tag = soup.find('meta', {'name': name})
@@ -39,7 +50,15 @@ def find_meta_tag_value(url: str, name: str):
     else:
         return False, None
 
-def check_dns_txt_record_exists(url: str, txt_record: str):
+def check_dns_txt_record_exists(url: str, txt_record: str) -> bool:
+    '''
+        check_dns_txt_record_exists: checks whether a txt record exists in the DNS for the given URL
+        :param url(str): URL of a website
+        :param txt_record(str): TXT record to check
+
+        return (bool): whether txt record exists or not for the given URL
+
+    '''
     url = urlparse(url).netloc
     res = resolver.resolve(url, 'TXT')
     txt_record = f'"{txt_record}"'
@@ -50,6 +69,11 @@ def check_dns_txt_record_exists(url: str, txt_record: str):
     return False
 
 def add_payload_response_to_db(payload: dict, response: dict):
+    '''
+        add_payload_response_to_db: to add the request payload and response to dynamodb table
+        :param payload (dict): request payload
+        :param response (dict): response sent by the endpoint 
+    '''
     session = boto3.Session(os.environ.get('ACCESS_ID'), os.environ.get('SECRET_KEY'))
     dynamo_db = session.resource('dynamodb', os.environ.get('REGION_NAME'))
     requests_table = dynamo_db.Table('Requests')
