@@ -1,0 +1,50 @@
+service: ant-test
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: test
+  region: ap-south-1
+  environment:
+    ACCESS_ID: <add your access id>
+    SECRET_KEY: <add your secret key>
+    REGION_NAME: ap-south-1
+
+plugins:
+  - serverless-offline
+  - serverless-python-requirements
+
+functions:
+  get-meta-tag:
+    handler: handler.get_meta_tag_value
+    events:
+      - httpApi:
+          path: /get_meta_tag
+          method: get
+  
+  check_txt_record:
+    handler: handler.check_dns_txt
+    events:
+      - httpApi:
+          path: /check_txt_record
+          method: post
+
+package:
+  exclude:
+    - node_modules/**
+    - env/**
+
+resources:
+  Resources:
+    requeststable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Requests
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
